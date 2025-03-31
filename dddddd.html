@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>카카오 스카이뷰 지도 다운로드</title>
+  <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=148cf172e3380b68053ff4bfaf350fce&libraries=services,drawing"></script>
+  <style>
+    html, body { margin: 0; height: 100%; }
+    #map { width: 100%; height: 90vh; }
+    #controls {
+      padding: 10px;
+      text-align: center;
+      background: #f0f0f0;
+    }
+    input { margin: 0 5px; }
+    #notice {
+      font-size: 0.9em;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+<div id="controls">
+  ?? 장소: <input type="text" id="keyword" placeholder="예: 서울역" />
+  줌레벨: <input type="number" id="zoom" min="1" max="19" value="17" />
+  <button onclick="searchPlace()">이동</button>
+  <button onclick="enterCaptureMode()">?? 캡처 모드</button>
+  <div id="notice">※ 크롬 확장 <b>GoFullPage</b>로 전체 캡처 가능</div>
+</div>
+
+<div id="map"></div>
+
+<script>
+  let map, ps, marker;
+
+  function initMap() {
+    const container = document.getElementById('map');
+    const options = {
+      center: new kakao.maps.LatLng(37.5665, 126.9780),
+      level: 3,
+      mapTypeId: kakao.maps.MapTypeId.HYBRID
+    };
+    map = new kakao.maps.Map(container, options);
+    ps = new kakao.maps.services.Places();
+  }
+
+  function searchPlace() {
+    const keyword = document.getElementById('keyword').value;
+    const zoom = parseInt(document.getElementById('zoom').value);
+    if (!keyword) return alert(\"장소를 입력하세요.\");
+    ps.keywordSearch(keyword, function(data, status) {
+      if (status === kakao.maps.services.Status.OK) {
+        const coords = new kakao.maps.LatLng(data[0].y, data[0].x);
+        map.setCenter(coords);
+        map.setLevel(19 - zoom); // 카카오맵의 level은 숫자가 낮을수록 확대
+        if (marker) marker.setMap(null);
+        marker = new kakao.maps.Marker({ position: coords, map });
+      } else {
+        alert(\"장소를 찾을 수 없습니다.\");
+      }
+    });
+  }
+
+  function enterCaptureMode() {
+    document.getElementById('controls').style.display = 'none';
+    alert('이제 크롬 확장 프로그램 \"GoFullPage\"를 사용해 전체 지도 화면을 PNG 또는 PDF로 저장하세요!');
+  }
+
+  window.onload = initMap;
+</script>
+
+</body>
+</html>
